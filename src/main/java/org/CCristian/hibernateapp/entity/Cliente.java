@@ -66,10 +66,10 @@ public class Cliente {
 
     @Override
     public String toString() {
-        return "==================================================================================" +
+        return "---------------------------------------------------------------------------" +
                 "\nid= " + id +
-                "\nnombre= " + nombre +
-                "\napellido= " + apellido +
-                "\nformapago= " + formaPago;
+                ", nombre= " + nombre +
+                ", apellido= " + apellido +
+                ", formapago= " + formaPago;
     }
 }

@@ -5,6 +5,7 @@ import org.CCristian.hibernateapp.dominio.ClienteDto;
 import org.CCristian.hibernateapp.entity.Cliente;
 import org.CCristian.hibernateapp.util.JpaUtil;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class HibernateQL {
@@ -123,6 +124,134 @@ public class HibernateQL {
                 .createQuery("SELECT LOWER(CONCAT(c.nombre, ' ', c.apellido)) AS nombreCompleto FROM Cliente c", String.class)
                 .getResultList();
         nombres.forEach(System.out::println);
+
+
+        System.out.println("\n============= Consulta para Buscar por Nombre =============\n");
+        String param = "and";
+        clientes = em
+                .createQuery("SELECT c FROM Cliente c WHERE UPPER(c.nombre) LIKE UPPER(:parametro)", Cliente.class)
+                .setParameter("parametro", "%" + param + "%")
+                .getResultList();
+        clientes.forEach(System.out::println);
+
+
+        System.out.println("\n============= Consultas por Rangos Numéricos =============\n");
+        clientes = em
+                .createQuery("SELECT c FROM Cliente c WHERE c.id BETWEEN 2 AND 5", Cliente.class)
+                .getResultList();
+        clientes.forEach(System.out::println);
+
+
+        System.out.println("\n============= Consultas por Rangos de Caracteres =============\n");
+        clientes = em
+                .createQuery("SELECT c FROM Cliente c WHERE c.nombre BETWEEN 'J' AND 'Q'", Cliente.class)
+                .getResultList();
+        clientes.forEach(System.out::println);
+
+
+        System.out.println("\n============= Consultas con Orden =============\n");
+        clientes = em
+                .createQuery("SELECT c FROM Cliente c ORDER BY c.nombre ASC, c.apellido ASC", Cliente.class)
+                .getResultList();
+        clientes.forEach(System.out::println);
+
+
+        System.out.println("\n============= Consultas con Total de Registros de la Tabla =============\n");
+        Long total = em
+                .createQuery("SELECT COUNT(c) AS Total FROM Cliente c", Long.class)
+                .getSingleResult();
+        System.out.println("Total de Clientes: " + total);
+
+        System.out.println("\n============= Consultas con valor Mínimo del Id =============\n");
+        Long minId = em
+                .createQuery("SELECT MIN(c.id) AS Mínimo FROM Cliente c", Long.class)
+                .getSingleResult();
+        System.out.println("ID Mínimo: " + minId);
+
+
+        System.out.println("\n============= Consultas con valor Máximo/Ultimo del Id =============\n");
+        Long maxId = em
+                .createQuery("SELECT MAX(c.id) AS Mínimo FROM Cliente c", Long.class)
+                .getSingleResult();
+        System.out.println("ID Máximo: " + maxId);
+
+
+        System.out.println("\n============= Consultas con Nombre y su largo =============\n");
+        registros = em
+                .createQuery("SELECT c.nombre, LENGTH(c.nombre) FROM Cliente c", Object[].class)
+                .getResultList();
+        registros.forEach(reg -> {
+            String nom = (String) reg[0];
+            Integer largo = (Integer) reg[1];
+            System.out.println("Nombre: " + nom + ", Largo: " + largo);
+        });
+
+
+        System.out.println("\n============= Consultas con el Nombre mas corto =============\n");
+        Integer minLargoNombre = em
+                .createQuery("SELECT MIN(LENGTH(c.nombre)) FROM Cliente c", Integer.class)
+                .getSingleResult();
+        System.out.println("Nombre mas corto: " + minLargoNombre);
+
+
+        System.out.println("\n============= Consultas con el Nombre mas lago =============\n");
+        Integer maxLargoNombre = em
+                .createQuery("SELECT MAX(LENGTH(c.nombre)) FROM Cliente c", Integer.class)
+                .getSingleResult();
+        System.out.println("Nombre mas largo: " + maxLargoNombre);
+
+
+        System.out.println("\n============= Consultas resumen funciones agregaciones COUNT, MIN, MAX, AVG, SUM =============\n");
+        Object[] estadisticas = em
+                .createQuery("SELECT MIN(c.id), MAX(c.id), SUM(c.id), COUNT(c.id), AVG(LENGTH(c.nombre)) FROM Cliente c", Object[].class)
+                .getSingleResult();
+        Long min = (Long) estadisticas[0];
+        Long max = (Long) estadisticas[1];
+        Long sum = (Long) estadisticas[2];
+        Long count = (Long) estadisticas[3];
+        Double avg = (Double) estadisticas[4];
+        System.out.println("Min: " + min + ", Max: " + max + " Sum: " + sum + ", Count: " + count + ", Avg: " + avg);
+
+
+        System.out.println("\n============= Consultas con el nombre mas corto y su largo =============\n");
+        registros = em
+                .createQuery("SELECT c.nombre, length(c.nombre) FROM Cliente c WHERE length(c.nombre) "
+                        + "= (SELECT MIN(length(c.nombre)) FROM Cliente c)", Object[].class)
+                .getResultList();
+        registros.forEach(reg -> {
+            String nom = (String) reg[0];
+            Integer largo = (Integer) reg[1];
+            System.out.println("Nombre: " + nom + ", Largo: " + largo);
+        });
+
+
+        System.out.println("\n============= Consultas con el nombre mas largo y su largo =============\n");
+        registros = em
+                .createQuery("SELECT c.nombre, length(c.nombre) FROM Cliente c WHERE length(c.nombre) "
+                        + "= (SELECT MAX(length(c.nombre)) FROM Cliente c)", Object[].class)
+                .getResultList();
+        registros.forEach(reg -> {
+            String nom = (String) reg[0];
+            Integer largo = (Integer) reg[1];
+            System.out.println("Nombre: " + nom + ", Largo: " + largo);
+        });
+
+
+        System.out.println("\n============= Consultas para obtener el Ultimo Registro =============\n");
+        Cliente ultimoCliente = em
+                .createQuery("SELECT c FROM Cliente c WHERE c.id = "
+                        + "(SELECT MAX(c.id) FROM Cliente c)", Cliente.class)
+                .getSingleResult();
+        System.out.println(ultimoCliente);
+
+
+        System.out.println("\n============= Consultas WHERE IN =============\n");
+        clientes = em
+                .createQuery("SELECT c FROM Cliente c WHERE c.id IN :ids", Cliente.class)
+                .setParameter("ids", Arrays.asList(1L, 2L, 10L, 6L))
+                .getResultList();
+
+        clientes.forEach(System.out::println);
 
         em.close();
     }
